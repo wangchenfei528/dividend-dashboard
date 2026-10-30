@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="UP5q5TtOExDa93JfQVrFoV">
+<head data-page-node-id="soT8jDIhaOO1AuLPujgWol">
+<meta charset="UTF-8" data-page-node-id="Zptk3s85KpsXR8VFQA3lnH" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="YGGqQRQm9KbSgmUi8P6RYC" />
+<title>高股息策略 · 实时股息率仪表盘</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #eef2f7;
+    --panel: #ffffff;
+    --ink: #16233b;
+    --ink-soft: #5b6b83;
+    --ink-faint: #8a97ab;
+    --line: #e6ebf2;
+    --line-strong: #d3dbe6;
+    --primary: #2f6bff;
+    --primary-deep: #1f4fd8;
+    --primary-soft: #e8efff;
+    --accent: #7c5cff;
+    --buy-bg: #e3f9ec;
+    --buy-fg: #0e9f5a;
+    --buy-bar: #22c55e;
+    --hold-bg: #fff7d6;
+    --hold-fg: #b98a0a;
+    --hold-bar: #eab308;
+    --sell-bg: #ffe3e3;
+    --sell-fg: #d92d20;
+    --sell-bar: #ef4444;
+    --soft-sell-bg: #ffecdd;
+    --soft-sell-fg: #e06b1a;
+    --soft-sell-bar: #f97316;
+    --up: #e02424;
+    --down: #16a34a;
+    --flat: #94a3b8;
+    --shadow-sm: 0 1px 2px rgba(22,35,59,0.05);
+    --shadow-md: 0 2px 6px rgba(22,35,59,0.06), 0 12px 28px rgba(22,35,59,0.07);
+    --radius: 16px;
+    --font-num: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background:
+      radial-gradient(1200px 500px at 85% -10%, rgba(124,92,255,0.10), transparent 60%),
+      radial-gradient(1000px 460px at -10% 0%, rgba(47,107,255,0.10), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 26px 24px 70px;
+  }
+
+  /* ===== Hero ===== */
+  header.hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f2f6ff 55%, #eaf0ff 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px 28px 22px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 16px;
+  }
+  header.hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--buy-bar));
+  }
+  header.hero .hero-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header.hero h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  header.hero h1 .ball {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #fff;
+    font-size: 19px;
+    box-shadow: 0 4px 12px rgba(47,107,255,0.35);
+  }
+  header.hero h1 .live-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 999px;
+    background: var(--buy-fg);
+    box-shadow: 0 0 0 3px rgba(14,159,90,0.22);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(14,159,90,0.22); }
+    50% { box-shadow: 0 0 0 7px rgba(14,159,90,0.08); }
+  }
+  header.hero p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+  }
+  .hero-tags {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .hero-tags .tag {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-deep);
+    background: var(--primary-soft);
+    border: 1px solid #cddfff;
+    padding: 5px 11px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .hero-tags .tag.green { color: var(--buy-fg); background: var(--buy-bg); border-color: #bfecd3; }
+
+  /* ===== Toolbar ===== */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 13px 16px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 13px;
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar input[type=text], .toolbar select {
+    border: 1px solid var(--line-strong);
+    background: #fbfcfe;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: all 0.15s;
+  }
+  .toolbar input[type=text]:focus, .toolbar select:focus {
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(47,107,255,0.12);
+  }
+  .toolbar input[type=text] { width: 190px; }
+  .toolbar label { font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+  .toolbar button {
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toolbar button:hover { border-color: var(--primary); color: var(--primary); background: #f7faff; }
+  .toolbar button.primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(47,107,255,0.30);
+  }
+  .toolbar button.primary:hover { background: linear-gradient(135deg, #4380ff, var(--primary-deep)); color: #fff; transform: translateY(-1px); }
+  .toolbar button.primary:disabled { opacity: 0.6; cursor: progress; transform: none; }
+  .toolbar button.danger:hover { border-color: #dc2626; color: #dc2626; background: #fff7f7; }
+  .refresh-status {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    background: #f4f6fa;
+    padding: 5px 10px;
+    border-radius: 999px;
+  }
+  .refresh-status.err { color: var(--up); background: #fff0f0; }
+
+  /* ===== Legend ===== */
+  .legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 11px 16px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 13px;
+    font-size: 12.5px;
+  }
+  .legend .lbl {
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin-right: 4px;
+  }
+  .legend .item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: transform 0.15s;
+  }
+  .legend .item:hover { transform: translateY(-1px); }
+  .legend .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+  .legend .item.buy { background: var(--buy-bg); color: var(--buy-fg); }
+  .legend .item.buy .dot { background: var(--buy-bar); }
+  .legend .item.hold { background: var(--hold-bg); color: var(--hold-fg); }
+  .legend .item.hold .dot { background: var(--hold-bar); }
+  .legend .item.softsell { background: var(--soft-sell-bg); color: var(--soft-sell-fg); }
+  .legend .item.softsell .dot { background: var(--soft-sell-bar); }
+  .legend .item.sell { background: var(--sell-bg); color: var(--sell-fg); }
+  .legend .item.sell .dot { background: var(--sell-bar); }
+
+  /* ===== Summary ===== */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 13px;
+  }
+  .summary .card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 15px 12px 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .summary .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .summary .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+  }
+  .summary .card.buy::before { background: var(--buy-bar); }
+  .summary .card.hold::before { background: var(--hold-bar); }
+  .summary .card.softsell::before { background: var(--soft-sell-bar); }
+  .summary .card.sell::before { background: var(--sell-bar); }
+  .summary .card.avg::before { background: linear-gradient(180deg, var(--primary), var(--accent)); }
+  .summary .card .label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .summary .card .value {
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num);
+    letter-spacing: -0.5px;
+  }
+  .summary .card .sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+  .summary .card.buy .value { color: var(--buy-fg); }
+  .summary .card.hold .value { color: var(--hold-fg); }
+  .summary .card.softsell .value { color: var(--soft-sell-fg); }
+  .summary .card.sell .value { color: var(--sell-fg); }
+  .summary .card.avg .value { color: var(--primary-deep); }
+
+  /* ===== Table ===== */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead th {
+    background: #f6f8fc;
+    color: #44536b;
+    font-weight: 700;
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 2;
+    font-size: 12.5px;
+    letter-spacing: 0.3px;
+  }
+  thead th:hover { background: #f0f4fb; color: var(--primary-deep); }
+  thead th .arrow { display: inline-block; margin-left: 4px; font-size: 10px; color: var(--ink-faint); }
+  thead th.sorted { color: var(--primary-deep); }
+  thead th.sorted .arrow { color: var(--primary); }
+  thead th.text-right, td.text-right { text-align: right; }
+  thead th.text-center, td.text-center { text-align: center; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.12s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f7faff; }
+  tbody tr.need-code { background: #fffbeb; }
+  tbody tr.need-code:hover { background: #fff7d9; }
+  tbody td { padding: 12px 18px; vertical-align: middle; }
+
+  .name {
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.2px;
+  }
+  .code-line {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .code-line .code {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num);
+    background: #f1f4f9;
+    padding: 1px 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .code-line .code:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .code-line .need {
+    color: var(--soft-sell-fg);
+    background: var(--soft-sell-bg);
+    padding: 1px 8px;
+    border-radius: 5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .code-line .need:hover { outline: 1px solid var(--soft-sell-bar); }
+
+  .price-main {
+    font-size: 16px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num);
+    letter-spacing: -0.3px;
+    transition: color 0.2s;
+  }
+  .price-main.up { color: var(--up); }
+  .price-main.down { color: var(--down); }
+  .price-main.flat { color: var(--ink); }
+  .price-sub {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-num);
+  }
+  .price-sub.up { color: var(--up); }
+  .price-sub.down { color: var(--down); }
+  .price-sub.flat { color: var(--ink-soft); }
+
+  .yield { font-weight: 700; font-variant-numeric: tabular-nums; font-family: var(--font-num); }
+  .yield.pos { color: var(--buy-fg); }
+  .yield.neu { color: var(--hold-fg); }
+  .yield.neg { color: var(--sell-fg); }
+  .dividend-edit {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--line-strong);
+    padding: 0 2px;
+    transition: all 0.15s;
+  }
+  .dividend-edit:hover { border-color: var(--primary); color: var(--primary); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.75;
+  }
+  .badge.buy { background: var(--buy-bg); color: var(--buy-fg); border-color: #bfecd3; }
+  .badge.hold { background: var(--hold-bg); color: var(--hold-fg); border-color: #f1e3a4; }
+  .badge.softsell { background: var(--soft-sell-bg); color: var(--soft-sell-fg); border-color: #f8d3b4; }
+  .badge.sell { background: var(--sell-bg); color: var(--sell-fg); border-color: #f5c3c0; }
+  .badge.nocode { background: #f3f5f9; color: var(--ink-faint); border-color: var(--line); }
+
+  .range { display: inline-flex; flex-direction: column; gap: 5px; width: 112px; }
+  .range-bar {
+    position: relative;
+    height: 7px;
+    background: linear-gradient(90deg, #eef1f6, #e3e8f0);
+    border-radius: 999px;
+    overflow: visible;
+    box-shadow: inset 0 1px 2px rgba(22,35,59,0.06);
+  }
+  .range-bar .track {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: linear-gradient(90deg, rgba(234,179,8,0.55), rgba(34,197,94,0.65));
+    border-radius: 999px;
+  }
+  .range-bar .marker {
+    position: absolute;
+    top: 50%;
+    width: 11px; height: 11px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid var(--ink);
+    transform: translate(-50%, -50%);
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(22,35,59,0.25);
+  }
+  .range .label { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; font-family: var(--font-num); }
+
+  .delta { font-size: 11px; color: var(--ink-faint); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .delta.above { color: var(--buy-fg); }
+  .delta.below { color: var(--sell-fg); }
+
+  .footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 18px;
+    background: #f8fafd;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .note {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #fffdf5, #fffbeb);
+    border: 1px solid #f3e6b8;
+    border-left: 4px solid var(--hold-bar);
+    border-radius: 12px;
+    font-size: 12.5px;
+    color: #6f5b1c;
+    line-height: 1.8;
+    box-shadow: var(--shadow-sm);
+  }
+  .note strong { color: #8a6d0f; }
+  .note b.tag { background: var(--hold-bg); padding: 1px 6px; border-radius: 5px; color: var(--hold-fg); }
+
+  /* 数值更新的高亮闪烁 */
+  @keyframes flashUp {
+    0% { background: rgba(224,36,36,0.16); }
+    100% { background: transparent; }
+  }
+  @keyframes flashDown {
+    0% { background: rgba(22,163,74,0.16); }
+    100% { background: transparent; }
+  }
+  tr.flash-up td { animation: flashUp 1.2s ease-out; }
+  tr.flash-down td { animation: flashDown 1.2s ease-out; }
+
+  @media (max-width: 720px) {
+    .toolbar input[type=text] { width: 100%; }
+    header.hero h1 { font-size: 19px; }
+    table { font-size: 12.5px; }
+    thead th, tbody td { padding: 10px 10px; }
+    .range { width: 82px; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body data-page-node-id="yvjfawgI5aqVSGjzHSrnOO">
+<div class="wrap" data-page-node-id="gP4ditayuZGCR8Bnhslr6p">
+  <header class="hero" data-page-node-id="1TIGVt4jeEeIZ7EtGBKHBP">
+    <div class="hero-row" data-page-node-id="zGPhh7tdDiflOXKAKtYRwk">
+      <div data-page-node-id="0MCe8FKJ3D1y5oiTMZFSt8">
+        <h1 data-page-node-id="Glrrh09HopNFsFmBIumKl2">
+          <span class="ball" data-page-node-id="XJWFiFeEshfg18la2bppmm">⚾</span>
+          高股息策略 · 实时股息率仪表盘
+          <span class="live-dot" data-page-node-id="5pojlQSSSikGGcr06JZCoE"></span>
+        </h1>
+        <p data-page-node-id="EBR4mWcn2kVUrr4ILBCtZD">一键拉取最新价，股息率 / 当前位置 / 击球区间实时重算 —— 数据来自东方财富公开行情接口</p>
+      </div>
+      <div class="hero-tags" data-page-node-id="cdWDETRiY5xivShx6nR863">
+        <span class="tag green" data-page-node-id="IPisXaBa7cp36RKg6vUe50">● 实时行情</span>
+        <span class="tag" data-page-node-id="f4RilWIi3U1r0PBAgZpbJo">● 自动刷新</span>
+        <span class="tag" data-page-node-id="KwqMdqO79HlnueP6HnPy2E">● 本地保存</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar" data-page-node-id="DKNUtHvLrb9ErFc4Up9kLg">
+    <div class="group" data-page-node-id="ti7NIBTvJKkwOZvtkrASVd">
+      <label for="filterInput" data-page-node-id="8DloYCgdr7UCJhnbc5a3RG">🔍</label>
+      <input id="filterInput" type="text" placeholder="搜索股票名称（例：茅台 / 银行）" data-page-node-id="xs6C2WmqdKApS9JOnsE48f" />
+    </div>
+    <div class="group" data-page-node-id="Wi9uIplb06GgSn6wJEDHcH">
+      <label for="zoneFilter" data-page-node-id="GLILhWjUDzChVbuBfw0vKC">区间：</label>
+      <select id="zoneFilter" data-page-node-id="Zane1bymDAnN9QEodFcsrV">
+        <option value="all" data-page-node-id="oyFQ3u7QfEFvBDS1LeCww4">全部</option>
+        <option value="buy" data-page-node-id="H9IyopktpUVgJvReccOCe3">击球区间（低吸）</option>
+        <option value="hold" data-page-node-id="D7ZGtikOnv3J0F5f34yHy8">持有收息</option>
+        <option value="softsell" data-page-node-id="b3z3JRmqmbvuHJxGc5RQUt">偏贵（减仓）</option>
+        <option value="sell" data-page-node-id="2e1RJjkovfp06HinLUoyEB">网络化减仓</option>
+      </select>
+    </div>
+    <div class="group" data-page-node-id="V0vQrCzFKDNCM6lt4Gxywu">
+      <label for="autoRefresh" data-page-node-id="VqWU7XCHViRX9X0ApN54rt">自动刷新：</label>
+      <select id="autoRefresh" data-page-node-id="zFBX7P1EdxVDZ0bXHtaJeZ">
+        <option value="0" data-page-node-id="KK2XiLa06S3jf6SiPFTuLV">关闭</option>
+        <option value="30" data-page-node-id="XTlVtKGkZzYOSIajtivTl2">30 秒</option>
+        <option value="60" selected data-page-node-id="enKE4dzryLnaRZLzyqjZvu">1 分钟</option>
+        <option value="300" data-page-node-id="DfRC7GJoiZ4h0CCU5fV0Mh">5 分钟</option>
+      </select>
+    </div>
+    <div class="spacer" data-page-node-id="mCEOPA6i3wglGNCjJdltVZ"></div>
+    <div class="group" data-page-node-id="JBiUnPeZ0NMYtLRNyAwgHr">
+      <span class="refresh-status" id="refreshStatus" data-page-node-id="GURjpFGFkV2hVGA9sDHcb0">尚未拉取</span>
+      <button id="refreshBtn" class="primary" data-page-node-id="4pQTwz5QQ30M4rm6SXK7Xl">🔄 一键拉取最新价</button>
+      <button id="resetBtn" class="danger" title="恢复初始参考价和默认股票代码" data-page-node-id="TF5Qo7iCXf6mpjEC8jEj1u">↺ 恢复默认</button>
+    </div>
+  </div>
+
+  <div class="legend" data-page-node-id="KLj5GkFAbU5pYMuTb4T6Uw">
+    <span class="lbl" data-page-node-id="ddbxRdxKrv3kWi6GJ2WfUO">四档分区：</span>
+    <span class="item buy" data-page-node-id="CE7nVLBNg03nbIsaqbMtqJ"><span class="dot" data-page-node-id="QPrCzCdtKeQAvNlohCWEm9"></span>击球区间 · 估值便宜可低吸</span>
+    <span class="item hold" data-page-node-id="OTa19DKRA2iqJQrQDjB3QZ"><span class="dot" data-page-node-id="43nytEQUqC5cFiYdfBNDlM"></span>持有收息 · 估值合理安心拿</span>
+    <span class="item softsell" data-page-node-id="AQ71CeDCgAqmPnlthYx1tz"><span class="dot" data-page-node-id="ls5OHW6b0VH3r5L3EVYlfG"></span>偏贵减仓 · 考虑分批减一点</span>
+    <span class="item sell" data-page-node-id="m3h7DxAlpejdXVq3fqEaH2"><span class="dot" data-page-node-id="JeGua7taKsBAQHk7GFCFul"></span>网络化减仓 · 估值偏贵分批卖</span>
+  </div>
+
+  <div class="summary" id="summaryBar" data-page-node-id="9BLaAOBLB7bVxQvEXjGEze"></div>
+
+  <div class="panel" data-page-node-id="WIaRaqqwwGdw77EAgCXJm1">
+    <table id="stockTable" data-page-node-id="ovv34PZrrrgrXvTTkIjdzY">
+      <thead data-page-node-id="IWdt5kwzxad0Pv79ZYscrg">
+        <tr data-page-node-id="7chDu8QZzaBZhbBmY5DBp6">
+          <th data-sort="name" data-page-node-id="QmKvzx4kZR1lslr5qDxJEz">名称 <span class="arrow" data-page-node-id="0ueNBJ3Xse9R9MlfKzqGga">↕</span></th>
+          <th data-sort="price" class="text-right" data-page-node-id="Jg3TF4fHdh4EEZpHWjWQYx">最新价 <span class="arrow" data-page-node-id="LeTvMetwUKQw4m2RtinslJ">↕</span></th>
+          <th data-sort="dividend" class="text-right" data-page-node-id="UWorSYHwH7MU4t0EcrZeXb">预期分红 <span class="arrow" data-page-node-id="DebQMSCJ2o0sDiEJqf26Xf">↕</span></th>
+          <th data-sort="yield" class="text-right" data-page-node-id="fpEcdTx7zZfRVAJHB4zFlo">预期股息率 <span class="arrow" data-page-node-id="x6TjBH20MC7kc3a6cjV1dD">↕</span></th>
+          <th data-sort="zone" data-page-node-id="NIM6henWNd4R5K8xQTqX1l">当前位置 <span class="arrow" data-page-node-id="p1uoEmCbGAR047m2c147Bw">↕</span></th>
+          <th data-page-node-id="rG4Uj8ugrGBKPmUB5yFsUq">合理区间</th>
+        </tr>
+      </thead>
+      <tbody id="stockBody" data-page-node-id="5X5WewwyTP9HRIrBHuDvI0"></tbody>
+    </table>
+    <div class="footer-bar" data-page-node-id="SXAKNsSCOGsbLGiWUjvb9A">
+      <span id="rowCount" data-page-node-id="DGLjLhT5IiFdRzgdo4AlXA">共 0 只</span>
+      <span id="dataTime" data-page-node-id="pz8N1lpLJ5rJ2MOrAIJGRP"></span>
+      <span data-page-node-id="pfSWTwHVchJqAlYHKs4Aty">💾 代码与参考价保存在浏览器本地</span>
+    </div>
+  </div>
+
+  <div class="note" data-page-node-id="woUEfDrYIgsXFHY6ifKmD4">
+    <strong data-page-node-id="nVMmVs3DTPvODDta7zwxHJ">使用提示：</strong>
+    ① 「最新价」为实时行情（红涨绿跌），点击任意股票下方的灰色 <b class="tag" data-page-node-id="jnzJfq2WdldmSGaatL2SCz">6 位代码</b> 可修改 / 填写代码（<b class="tag" data-page-node-id="ejToznlemx8pfYjN6VxdMe">东风回A</b>、<b class="tag" data-page-node-id="hOQu56tVFGMkO8iTRziCUk">襄钇</b> 黄色行待配置）。
+    ② 「合理区间」进度条显示当前股息率位置 —— 越靠右越便宜，进入击球区。
+    ③ 打开「自动刷新」定时拉取（默认 1 分钟），也可随时点「一键拉取最新价」。
+    ④ 点击「预期分红」数字可修改年度分红假设，自动保存到本地。
+    ⑤ 数据来自东方财富免费行情接口，仅供个人研究，可能有延迟，不构成投资建议。
+  </div>
+</div>
+
+<script>
+/* ========== 原始数据（来自图）：含默认 A 股代码 ========== */
+const ORIGINAL = [
+  { name: '宇通客车', code: '600066', price: 29.9,  dividend: 2.50, range: '7%-8%' },
+  { name: '格力',     code: '000651', price: 39.3,  dividend: 3.00, range: '6%-8%' },
+  { name: '五粮液',   code: '000858', price: 71.1,  dividend: 5.10, range: '6%-7%' },
+  { name: '泸州老窖', code: '000568', price: 81.9,  dividend: 5.80, range: '5%-7%' },
+  { name: '海尔',     code: '600690', price: 21.1,  dividend: 1.25, range: '5.5%-7%' },
+  { name: '兴业银行', code: '601166', price: 17.9,  dividend: 1.05, range: '5.5%-8%' },
+  { name: '海控',     code: '601919', price: 17.1,  dividend: 1.00, range: '6%-8%' },
+  { name: '东风回A',  code: '',       price: 49.0,  dividend: 2.80, range: '5%-7%' },
+  { name: '兖矿',     code: '600188', price: 19.9,  dividend: 1.12, range: '5%-7%' },
+  { name: '白药',     code: '000538', price: 50.0,  dividend: 2.80, range: '5%-7%' },
+  { name: '中谷物流', code: '603565', price: 12.9,  dividend: 0.70, range: '7%-10%' },
+  { name: '美的',     code: '000333', price: 86.2,  dividend: 4.60, range: '5%-7%' },
+  { name: '招行',     code: '600036', price: 39.6,  dividend: 2.10, range: '5%-7%' },
+  { name: '平安',     code: '601318', price: 55.9,  dividend: 2.85, range: '5%-7%' },
+  { name: '云铝股份', code: '000807', price: 26.7,  dividend: 1.35, range: '5.5%-7%' },
+  { name: '移动',     code: '600941', price: 98.0,  dividend: 4.70, range: '5%-7%' },
+  { name: '内蒙华电', code: '600863', price: 4.6,   dividend: 0.22, range: '6%-8%' },
+  { name: '伊利',     code: '600887', price: 26.5,  dividend: 1.25, range: '5%-7%' },
+  { name: '神华',     code: '601088', price: 47.8,  dividend: 2.20, range: '5%-7%' },
+  { name: '海油',     code: '600938', price: 33.8,  dividend: 1.55, range: '5%-7%' },
+  { name: '襄钇',     code: '',       price: 27.0,  dividend: 1.15, range: '5%-7%' },
+  { name: '国电电力', code: '600795', price: 5.2,   dividend: 0.22, range: '5%-7%' },
+  { name: '茅台',     code: '600519', price: 1292.3, dividend: 54.00, range: '5%-6%' },
+  { name: '藏格矿业', code: '000408', price: 78.8,  dividend: 3.20, range: '5%-6%' },
+  { name: '中国银行', code: '601988', price: 6.1,   dividend: 0.24, range: '4.5%-6%' },
+  { name: '长江电力', code: '600900', price: 28.1,  dividend: 1.10, range: '4%-5%' },
+  { name: '电信',     code: '601728', price: 6.4,   dividend: 0.25, range: '4.5%-6%' },
+  { name: '农业银行', code: '601288', price: 6.8,   dividend: 0.26, range: '4.5%-6%' },
+  { name: '国投电力', code: '600886', price: 13.9,  dividend: 0.53, range: '4%-5%' },
+  { name: '紫金矿业', code: '601899', price: 34.5,  dividend: 1.10, range: '4%-6%' },
+  { name: '中煤能源', code: '601898', price: 15.0,  dividend: 0.45, range: '4%-5%' },
+];
+
+const STORAGE_KEY = 'dividend-calc-v2';
+
+/* "7%-8%" -> [7, 8] */
+function parseRange(str) {
+  const m = str.match(/([\d.]+)\s*%?\s*[-–~到]\s*([\d.]+)\s*%?/);
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : [0, 0];
+}
+
+/* 6位代码 -> 东财 secid：沪 1.xxxxxx，深 0.xxxxxx */
+function toSecid(code) {
+  if (!code || !/^\d{6}$/.test(code)) return null;
+  const sh = /^(60|68|51|11|113|110)/.test(code) || /^(9)/.test(code);
+  return (sh ? '1.' : '0.') + code;
+}
+
+/* 当前位置判定 */
+function classify(yieldPct, low, high) {
+  if (high <= low) return { key: 'hold', label: '持有收息', cls: 'hold', weight: 2 };
+  const mid = (low + high) / 2;
+  if (yieldPct > high) return { key: 'buy', label: '击球区间', cls: 'buy', weight: 0 };
+  if (yieldPct > mid)  return { key: 'buy', label: '击球区间', cls: 'buy', weight: 1 };
+  if (yieldPct >= low) return { key: 'hold', label: '持有收息', cls: 'hold', weight: 2 };
+  const gap = low - yieldPct;
+  if (gap <= 0.5) return { key: 'softsell', label: '偏贵（减仓）', cls: 'softsell', weight: 3 };
+  return { key: 'sell', label: '网络化减仓', cls: 'sell', weight: 4 };
+}
+
+/* ========== 数据 ========== */
+function loadStocks() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length === ORIGINAL.length) return saved;
+    }
+  } catch (e) {}
+  return ORIGINAL.map(s => Object.assign({}, s));
+}
+function saveStocks() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stocks)); } catch (e) {}
+}
+
+let stocks = loadStocks();
+stocks.forEach(enrich);
+
+function enrich(stock) {
+  stock._secid = toSecid(stock.code);
+  const y = (stock.dividend / stock.price) * 100;
+  stock._yield = isFinite(y) ? y : 0;
+  const [low, high] = parseRange(stock.range);
+  stock._low = low; stock._high = high;
+  stock._zone = classify(stock._yield, low, high);
+  stock._deltaLow = stock._yield - low;
+  stock._live = stock._live || null;
+  stock._liveError = false;
+  return stock;
+}
+
+/* ========== 拉取行情：同源代理 → 腾讯 fetch → 东财 JSONP 三重降级 ========== */
+let refreshing = false;
+let lastPrices = {};
+
+/* ---- 方案 0：本地服务器同源代理（/api/quotes），由 start_server.py 提供 ---- */
+async function fetchProxy() {
+  const pairs = [];
+  stocks.forEach(s => {
+    if (!s._secid) return;
+    const [mkt, code] = s._secid.split('.');
+    pairs.push({ code, key: (mkt === '1' ? 'sh' : 'sz') + code });
+  });
+  if (!pairs.length) {
+    setStatus('请先为待配置的股票填写代码', 'err');
+    return false;
+  }
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const resp = await fetch('/api/quotes?list=' + pairs.map(p => p.key).join(','), { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const j = await resp.json();
+    if (!j || !j.ok) throw new Error('proxy error');
+    const dt = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const tStr = `${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+    if (!j.data || Object.keys(j.data).length === 0) {
+      setStatus(`更新于 ${tStr}（代理返回空，接口可能受限）`, 'err');
+      return false;
+    }
+    let ok = 0;
+    const flashes = [];
+    stocks.forEach((s, i) => {
+      if (!s._secid) return;
+      const code = s._secid.split('.')[1];
+      const d = j.data[code];
+      if (d && isFinite(d.price) && d.price > 0) {
+        const prev = lastPrices[code];
+        s._live = { p: d.price, pct: d.pct || 0, chg: d.chg || 0 };
+        s.price = d.price;
+        s._liveError = false;
+        if (prev != null && Math.abs(prev - d.price) > 0.001) flashes.push({ idx: i, dir: d.price > prev ? 'up' : 'down' });
+        lastPrices[code] = d.price;
+        ok++;
+      } else {
+        s._live = null;
+        s._liveError = true;
+      }
+    });
+    saveStocks();
+    render();
+    applyFlashes(flashes);
+    setStatus(`更新于 ${tStr}（成功 ${ok}/${pairs.length}）`, ok === 0 ? 'err' : '');
+    return ok > 0;
+  } catch (e) {
+    clearTimeout(timer);
+    return false;
+  }
+}
+
+/* ---- 主方案：腾讯行情接口（qt.gtimg.cn，带 Access-Control-Allow-Origin: *）---- */
+async function fetchTencent() {
+  const pairs = [];
+  stocks.forEach(s => {
+    if (!s._secid) return;
+    const [mkt, code] = s._secid.split('.');
+    pairs.push({ code, key: (mkt === '1' ? 'sh' : 'sz') + code });
+  });
+  if (!pairs.length) {
+    setStatus('请先为待配置的股票填写代码', 'err');
+    return false;
+  }
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const resp = await fetch('https://qt.gtimg.cn/q=' + pairs.map(p => p.key).join(','), { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    const buf = await resp.arrayBuffer();
+    let text;
+    try { text = new TextDecoder('gbk').decode(buf); }
+    catch (e) { text = new TextDecoder('utf-8').decode(buf); }
+
+    let ok = 0;
+    const flashes = [];
+    const re = /v_(?:sh|sz)(\d{6})="([^"]*)"/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const code = m[1];
+      const f = m[2].split('~');
+      const stock = stocks.find(s => s.code === code);
+      if (!stock) continue;
+      const p = parseFloat(f[3]);
+      if (!isFinite(p) || p <= 0) {
+        stock._live = null;
+        stock._liveError = true;
+        continue;
+      }
+      const pct = isFinite(parseFloat(f[32])) ? parseFloat(f[32]) : 0;
+      const chg = isFinite(parseFloat(f[31])) ? parseFloat(f[31]) : 0;
+      const prev = lastPrices[code];
+      const idx = stocks.indexOf(stock);
+      stock._live = { p, pct, chg };
+      stock.price = p;
+      stock._liveError = false;
+      if (prev != null && Math.abs(prev - p) > 0.001) flashes.push({ idx, dir: p > prev ? 'up' : 'down' });
+      lastPrices[code] = p;
+      ok++;
+    }
+
+    saveStocks();
+    render();
+    applyFlashes(flashes);
+    const dt = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    setStatus(`更新于 ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}（成功 ${ok}/${pairs.length}）`,
+      ok === 0 ? 'err' : '');
+    return ok > 0;
+  } catch (e) {
+    clearTimeout(timer);
+    return false;
+  }
+}
+
+/* ---- 备用方案：东方财富 JSONP ---- */
+function fetchEastmoneyJsonp() {
+  return new Promise(resolve => {
+    const secids = [];
+    stocks.forEach(s => { if (s._secid) secids.push(s._secid); });
+    if (!secids.length) { resolve(false); return; }
+
+    const cb = 'qcb' + Date.now();
+    const url = 'https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&fields=f2,f3,f4,f12,f14&secids='
+      + secids.join(',') + '&cb=' + cb;
+
+    const timeout = setTimeout(() => { cleanup(); resolve(false); }, 8000);
+    function cleanup() {
+      window[cb] = undefined;
+      const sc = document.getElementById('em-script-' + cb);
+      if (sc) sc.remove();
+    }
+
+    window[cb] = function (resp) {
+      clearTimeout(timeout);
+      let ok = 0;
+      const flashes = [];
+      try {
+        const diff = resp && resp.data && resp.data.diff;
+        if (diff) {
+          const arr = Array.isArray(diff) ? diff : [diff];
+          const byCode = {};
+          arr.forEach(d => { if (d && d.f12) byCode[d.f12] = d; });
+          stocks.forEach((s, i) => {
+            if (!s._secid) return;
+            const code = s._secid.split('.')[1];
+            const d = byCode[code];
+            if (d && d.f2 != null && d.f2 !== '-' && d.f2 !== '') {
+              const prev = lastPrices[code];
+              const p = Number(d.f2);
+              s._live = { p, pct: Number(d.f3) || 0, chg: Number(d.f4) || 0 };
+              s.price = p;
+              s._liveError = false;
+              if (prev != null && Math.abs(prev - p) > 0.001) flashes.push({ idx: i, dir: p > prev ? 'up' : 'down' });
+              lastPrices[code] = p;
+              ok++;
+            } else {
+              s._live = null;
+              s._liveError = true;
+            }
+          });
+        }
+      } catch (e) {}
+      cleanup();
+      saveStocks();
+      render();
+      applyFlashes(flashes);
+      const dt = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      setStatus(`更新于 ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}（成功 ${ok}/${secids.length}）`,
+        ok === 0 ? 'err' : '');
+      resolve(ok > 0);
+    };
+
+    const sc = document.createElement('script');
+    sc.id = 'em-script-' + cb;
+    sc.src = url;
+    sc.onerror = function () { clearTimeout(timeout); cleanup(); resolve(false); };
+    document.head.appendChild(sc);
+  });
+}
+
+/* ---- 统一入口：代理 → 腾讯 → 东财 → 页面重载兜底 ---- */
+async function fetchQuotes() {
+  if (refreshing) return;
+  refreshing = true;
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  setStatus('拉取中…');
+
+  /* 静态版：东财 HTTPS JSONP 为首选（任意来源都可用，无需后端） */
+  let ok = await fetchEastmoneyJsonp();
+  if (!ok) {
+    setStatus('主接口不可用，尝试备用行情源…');
+    ok = await fetchTencent();
+  }
+  if (!ok) {
+    ok = await fetchProxy();
+  }
+
+  if (ok) {
+    btn.disabled = false;
+    refreshing = false;
+    return;
+  }
+
+  /* 所有接口都不通：如果是 http(s) 页面，用重载让服务器重新注入最新行情 */
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    setStatus('接口不通，改用页面重载获取最新行情…');
+    setTimeout(function () { location.reload(); }, 700);
+    return; // 保持 refreshing = true，避免重复触发
+  }
+
+  setStatus('行情接口暂时不可用，请点「一键拉取最新价」重试', 'err');
+  btn.disabled = false;
+  refreshing = false;
+}
+
+function applyFlashes(flashes) {
+  flashes.forEach(f => {
+    const row = tbody.querySelector(`tr[data-idx="${f.idx}"]`);
+    if (row) {
+      row.classList.add('flash-' + f.dir);
+      setTimeout(() => row.classList.remove('flash-up', 'flash-down'), 1300);
+    }
+  });
+}
+
+function setStatus(msg, err) {
+  const el = document.getElementById('refreshStatus');
+  el.textContent = msg;
+  el.className = 'refresh-status' + (err ? ' err' : '');
+}
+
+/* 自动刷新 */
+let autoTimer = null;
+function scheduleAuto() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  const sec = parseInt(document.getElementById('autoRefresh').value, 10);
+  if (sec > 0) {
+    autoTimer = setInterval(() => {
+      if (!document.hidden) fetchQuotes();
+    }, sec * 1000);
+  }
+}
+
+/* ========== 渲染 ========== */
+const tbody = document.getElementById('stockBody');
+const rowCountEl = document.getElementById('rowCount');
+const summaryBar = document.getElementById('summaryBar');
+const dataTimeEl = document.getElementById('dataTime');
+
+let currentSort = { key: 'yield', dir: 'desc' };
+
+function rowHTML(stock, idx) {
+  const y = stock._yield;
+  const z = stock._zone;
+  let yCls = 'pos';
+  if (z.cls === 'hold') yCls = 'neu';
+  else if (z.cls === 'softsell' || z.cls === 'sell') yCls = 'neg';
+
+  const min = Math.max(0, stock._low - 1.5);
+  const max = stock._high + 1.5;
+  const span = max - min;
+  const lowPct = Math.max(0, Math.min(100, ((stock._low - min) / span) * 100));
+  const highPct = Math.max(0, Math.min(100, ((stock._high - min) / span) * 100));
+  const markerPct = Math.max(0, Math.min(100, ((y - min) / span) * 100));
+
+  let deltaStr = '', deltaCls = '';
+  if (y > stock._high) { deltaStr = `比上沿 +${(y - stock._high).toFixed(2)}%`; deltaCls = 'above'; }
+  else if (y < stock._low) { deltaStr = `比下沿 ${(y - stock._low).toFixed(2)}%`; deltaCls = 'below'; }
+  else { deltaStr = '区间内'; }
+
+  let priceHTML;
+  const live = stock._live;
+  if (live) {
+    const cls = live.pct > 0 ? 'up' : (live.pct < 0 ? 'down' : 'flat');
+    const pct = live.pct != null ? live.pct.toFixed(2) + '%' : '--';
+    const chg = live.chg != null ? (live.chg > 0 ? '+' : '') + live.chg.toFixed(2) : '--';
+    priceHTML = `
+      <div class="price-main ${cls}">${live.p.toFixed(2)}</div>
+      <div class="price-sub ${cls}">${chg}　${pct}</div>`;
+  } else if (stock._secid && stock._liveError) {
+    priceHTML = `<div class="price-main">--</div><div class="price-sub">拉取失败，点代码重试</div>`;
+  } else if (stock._secid) {
+    priceHTML = `<div class="price-main flat">${stock.price.toFixed(2)}</div><div class="price-sub">待拉取行情</div>`;
+  } else {
+    priceHTML = `<div class="price-main flat">${stock.price.toFixed(2)}</div><div class="price-sub">参考价（未配置代码）</div>`;
+  }
+
+  const codeHTML = stock._secid
+    ? `<span class="code" title="点击修改代码" data-idx="${idx}">${stock.code}</span>`
+    : `<span class="need" data-idx="${idx}">待填代码</span>`;
+
+  return `
+    <tr data-idx="${idx}" data-zone="${z.cls}" class="${stock._secid ? '' : 'need-code'}">
+      <td>
+        <div class="name">${stock.name}</div>
+        <div class="code-line">${codeHTML}</div>
+      </td>
+      <td class="text-right">${priceHTML}</td>
+      <td class="text-right">
+        <span class="yield neu dividend-edit" data-idx="${idx}" title="点击修改预期分红">${stock.dividend.toFixed(2)}</span>
+      </td>
+      <td class="text-right">
+        <div class="yield ${yCls}">${y.toFixed(2)}%</div>
+        <div class="delta ${deltaCls}">${deltaStr}</div>
+      </td>
+      <td>
+        ${stock._secid
+          ? `<span class="badge ${z.cls}">${z.label}</span>`
+          : `<span class="badge nocode">待配置</span>`}
+      </td>
+      <td>
+        <div class="range">
+          <div class="range-bar">
+            <div class="track" style="left:${lowPct}%; width:${(highPct - lowPct)}%;"></div>
+            <div class="marker" style="left:${markerPct}%;" title="当前股息率 ${y.toFixed(2)}%"></div>
+          </div>
+          <div class="label">${stock.range}</div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function render() {
+  stocks.forEach(enrich);
+
+  const filterText = (document.getElementById('filterInput').value || '').trim();
+  const zoneFilter = document.getElementById('zoneFilter').value;
+
+  let rows = stocks.map((s, i) => ({ s, i }));
+  if (filterText) rows = rows.filter(r => r.s.name.includes(filterText));
+  if (zoneFilter !== 'all') rows = rows.filter(r => r.s._zone.cls === zoneFilter);
+
+  const sortDir = currentSort.dir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    let av, bv;
+    switch (currentSort.key) {
+      case 'name': av = a.s.name; bv = b.s.name; break;
+      case 'price': av = a.s.price; bv = b.s.price; break;
+      case 'dividend': av = a.s.dividend; bv = b.s.dividend; break;
+      case 'yield': av = a.s._yield; bv = b.s._yield; break;
+      case 'zone': av = a.s._zone.weight; bv = b.s._zone.weight; break;
+      default: return 0;
+    }
+    if (typeof av === 'string') return av.localeCompare(bv, 'zh') * sortDir;
+    return (av - bv) * sortDir;
+  });
+
+  tbody.innerHTML = rows.map(r => rowHTML(r.s, r.i)).join('');
+  rowCountEl.textContent = `共 ${rows.length} 只 / 全部 ${stocks.length} 只`;
+
+  const counts = { buy: 0, hold: 0, softsell: 0, sell: 0, nocode: 0 };
+  let avgYield = 0, avgYieldN = 0;
+  stocks.forEach(s => {
+    if (!s._secid) { counts.nocode++; return; }
+    counts[s._zone.cls] = (counts[s._zone.cls] || 0) + 1;
+    avgYield += s._yield; avgYieldN++;
+  });
+  if (avgYieldN) avgYield = avgYield / avgYieldN;
+
+  summaryBar.innerHTML = `
+    <div class="card buy"><div class="label">⚾ 击球区间（低吸）</div><div class="value">${counts.buy}</div><div class="sub">只，可低吸</div></div>
+    <div class="card hold"><div class="label">💰 持有收息</div><div class="value">${counts.hold}</div><div class="sub">只，安心持有</div></div>
+    <div class="card softsell"><div class="label">⚖️ 偏贵减仓</div><div class="value">${counts.softsell}</div><div class="sub">只，考虑减仓</div></div>
+    <div class="card sell"><div class="label">📉 网络化减仓</div><div class="value">${counts.sell}</div><div class="sub">只，分批卖出</div></div>
+    <div class="card avg"><div class="label">📊 平均股息率</div><div class="value">${avgYield.toFixed(2)}%</div><div class="sub">已配置股票均值</div></div>
+    ${counts.nocode ? `<div class="card" style="grid-column:auto"><div class="label">⚠️ 待填代码</div><div class="value" style="color:var(--soft-sell-fg)">${counts.nocode}</div><div class="sub">只，点击代码填写</div></div>` : ''}
+  `;
+
+  // 只处理可排序的列（「合理区间」列无箭头，需跳过，否则会抛异常中断渲染）
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.sort === currentSort.key);
+    const arrow = th.querySelector('.arrow');
+    if (!arrow) return;
+    arrow.textContent = th.dataset.sort === currentSort.key ? (currentSort.dir === 1 ? '↑' : '↓') : '↕';
+  });
+
+  const t = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  dataTimeEl.textContent = `本地时间 ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+}
+
+/* ========== 交互 ========== */
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (currentSort.key === k) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+    else { currentSort.key = k; currentSort.dir = ['name'].includes(k) ? 'asc' : 'desc'; }
+    render();
+  });
+});
+
+document.getElementById('filterInput').addEventListener('input', render);
+document.getElementById('zoneFilter').addEventListener('change', render);
+document.getElementById('autoRefresh').addEventListener('change', scheduleAuto);
+document.getElementById('refreshBtn').addEventListener('click', fetchQuotes);
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('确定把所有股票恢复为初始参考价和默认代码吗？你填写的自定义代码将被清除。')) return;
+  stocks = ORIGINAL.map(s => Object.assign({}, s));
+  stocks.forEach(enrich);
+  saveStocks();
+  render();
+  fetchQuotes();
+});
+
+/* 点击代码 -> 修改/填写 6 位代码 */
+tbody.addEventListener('click', e => {
+  const codeEl = e.target.closest('.code, .need');
+  if (codeEl) {
+    const idx = parseInt(codeEl.dataset.idx, 10);
+    const old = stocks[idx].code || '';
+    const val = prompt(`为「${stocks[idx].name}」输入 6 位 A 股代码：\n（例如 600519 = 贵州茅台）`, old);
+    if (val === null) return;
+    const clean = (val.trim() || '').replace(/\D/g, '');
+    if (clean.length !== 6) {
+      alert('请输入 6 位数字代码，如 600519');
+      return;
+    }
+    stocks[idx].code = clean;
+    stocks[idx]._live = null;
+    enrich(stocks[idx]);
+    saveStocks();
+    render();
+    fetchQuotes();
+  }
+});
+
+/* 点击分红 -> 修改预期分红 */
+tbody.addEventListener('click', e => {
+  const dEl = e.target.closest('.dividend-edit');
+  if (dEl) {
+    const idx = parseInt(dEl.dataset.idx, 10);
+    const val = prompt(`为「${stocks[idx].name}」设置每股年度分红（元）：`, stocks[idx].dividend);
+    if (val === null) return;
+    const v = parseFloat(val);
+    if (!isFinite(v) || v <= 0) { alert('请输入大于 0 的数字'); return; }
+    stocks[idx].dividend = v;
+    saveStocks();
+    render();
+  }
+});
+
+/* ========== 启动 ========== */
+
+/* 1) 优先使用服务器注入的初始行情（无需页面发任何请求） */
+function applyInitialQuotes() {
+  const q = window.__INITIAL_QUOTES;
+  if (!q) return 0;
+  let n = 0;
+  Object.keys(q).forEach(code => {
+    const s = stocks.find(x => x.code === code);
+    if (!s) return;
+    const d = q[code];
+    if (!d || !isFinite(d.price) || d.price <= 0) return;
+    s._live = { p: d.price, pct: d.pct || 0, chg: d.chg || 0 };
+    s.price = d.price;
+    s._liveError = false;
+    lastPrices[code] = d.price;
+    n++;
+  });
+  return n;
+}
+
+const initN = applyInitialQuotes();
+render();
+
+if (initN > 0) {
+  const t = window.__QUOTE_TIME ? new Date(window.__QUOTE_TIME) : new Date();
+  const pad = n => String(n).padStart(2, '0');
+  setStatus(`服务端行情 ${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}（${initN} 只）`);
+} else {
+  /* 静态版：双击打开也能直接取行情，无需任何后端 */
+  setStatus('正在获取实时行情…');
+}
+
+scheduleAuto();
+/* 服务器注入已有时延后拉取即可；没有注入数据则立即尝试 */
+setTimeout(fetchQuotes, initN > 0 ? 1200 : 300);
+</script>
+</body>
+</html>
