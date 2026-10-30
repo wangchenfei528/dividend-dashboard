@@ -505,13 +505,82 @@
   tr.flash-up td { animation: flashUp 1.2s ease-out; }
   tr.flash-down td { animation: flashDown 1.2s ease-out; }
 
-  @media (max-width: 720px) {
+  /* 平板 / 窄窗口：表格允许横向滑动，不再被裁掉 */
+  @media (max-width: 1024px) {
+    .panel { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    table { min-width: 700px; }
+  }
+
+  /* 手机端：表格直接改成卡片，彻底不需要横向滑动 */
+  @media (max-width: 760px) {
     .toolbar input[type=text] { width: 100%; }
+    .toolbar .group { flex-wrap: wrap; }
+    .toolbar .group:last-child { width: 100%; }
+    .refresh-status { white-space: nowrap; flex: 1 1 100%; text-align: center; }
+    #refreshBtn, #resetBtn { flex: 1 1 auto; }
     header.hero h1 { font-size: 19px; }
-    table { font-size: 12.5px; }
-    thead th, tbody td { padding: 10px 10px; }
-    .range { width: 82px; }
     .summary { grid-template-columns: repeat(2, 1fr); }
+
+    .panel { overflow: visible; }
+    table { display: block; min-width: 0; font-size: 13px; }
+    thead { display: none; }
+    tbody { display: block; }
+
+    tbody tr {
+      display: block;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      display: block;
+      padding: 0;
+      text-align: left !important;
+      border: none;
+    }
+    tbody td.td-name { padding-bottom: 2px; }
+    tbody td.td-name .name { font-size: 15.5px; }
+
+    tbody td[data-label] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 0;
+      border-top: 1px dashed rgba(20, 40, 80, 0.07);
+    }
+    tbody td[data-label]::before {
+      content: attr(data-label);
+      flex: 0 0 auto;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #6b7a94;
+      letter-spacing: 0.2px;
+    }
+
+    tbody td[data-label] .stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      text-align: right;
+    }
+    tbody td[data-label] .stack.row {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 7px;
+    }
+    tbody td[data-label] .stack.row .price-main { font-size: 16px; }
+
+    /* 合理区间：标签独占一行，进度条占满整行 */
+    tbody td.td-range {
+      display: block;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(20, 40, 80, 0.07);
+    }
+    tbody td.td-range::before { display: block; margin-bottom: 7px; }
+    tbody td.td-range .range { width: 100%; }
   }
 </style>
 </head>
@@ -1010,24 +1079,26 @@ function rowHTML(stock, idx) {
 
   return `
     <tr data-idx="${idx}" data-zone="${z.cls}" class="${stock._secid ? '' : 'need-code'}">
-      <td>
+      <td class="td-name">
         <div class="name">${stock.name}</div>
         <div class="code-line">${codeHTML}</div>
       </td>
-      <td class="text-right">${priceHTML}</td>
-      <td class="text-right">
+      <td class="text-right" data-label="最新价"><div class="stack row">${priceHTML}</div></td>
+      <td class="text-right" data-label="预期分红">
         <span class="yield neu dividend-edit" data-idx="${idx}" title="点击修改预期分红">${stock.dividend.toFixed(2)}</span>
       </td>
-      <td class="text-right">
-        <div class="yield ${yCls}">${y.toFixed(2)}%</div>
-        <div class="delta ${deltaCls}">${deltaStr}</div>
+      <td class="text-right" data-label="预期股息率">
+        <div class="stack">
+          <div class="yield ${yCls}">${y.toFixed(2)}%</div>
+          <div class="delta ${deltaCls}">${deltaStr}</div>
+        </div>
       </td>
-      <td>
+      <td data-label="当前位置">
         ${stock._secid
           ? `<span class="badge ${z.cls}">${z.label}</span>`
           : `<span class="badge nocode">待配置</span>`}
       </td>
-      <td>
+      <td class="td-range" data-label="合理区间">
         <div class="range">
           <div class="range-bar">
             <div class="track" style="left:${lowPct}%; width:${(highPct - lowPct)}%;"></div>
